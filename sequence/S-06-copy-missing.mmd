@@ -24,10 +24,9 @@ sequenceDiagram
     activate D
     D-->>S: null
     deactivate D
-    opt Copy не існує
-        S-->>C: CopyNotFound
-        C-->>UI: 404 Примірник не знайдено
-    end
+    S->>D: insertLoan(...)
+    D-->>S: created L1
+    S-->>C: LoanCreated(L1)
     deactivate S
     deactivate C
     UI-->>B: Відмова — Loan не створено

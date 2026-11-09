@@ -20,10 +20,13 @@ sequenceDiagram
     activate D
     D-->>S: null
     deactivate D
-    opt Member не існує
-        S-->>C: MemberNotFound
-        C-->>UI: 404 Читача не знайдено
-    end
+    S->>D: findCopy(C1)
+    activate D
+    D-->>S: C1 exists
+    deactivate D
+    S->>D: insertLoan(...)
+    D-->>S: created L1
+    S-->>C: LoanCreated(L1)
     deactivate S
     deactivate C
     UI-->>B: Відмова — Loan не створено
