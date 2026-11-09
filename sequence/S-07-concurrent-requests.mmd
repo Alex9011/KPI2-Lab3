@@ -9,7 +9,7 @@ sequenceDiagram
     participant A as AccessGuard
     participant DB as LibraryDB
     Note over DB: Один Copy C1 — ексклюзивне блокування в одній транзакції
-    par Запит B1
+    Note over B1,DB: Перший запит обробляється до другого
         B1->>API1: submitLoan(M1, C1, dueAt)
         activate API1
         API1->>A: authorize(sessionB1, librarian)
@@ -41,7 +41,7 @@ sequenceDiagram
         deactivate S1
         API1-->>B1: 201 або 409
         deactivate API1
-    and Запит B2
+    Note over B2,DB: Другий запит надходить після першого
         B2->>API2: submitLoan(M2, C1, dueAt)
         activate API2
         API2->>A: authorize(sessionB2, librarian)
@@ -73,5 +73,4 @@ sequenceDiagram
         deactivate S2
         API2-->>B2: 201 або 409
         deactivate API2
-    end
     Note over DB: У фіналі рівно одна відкрита Loan — рівно один успіх
