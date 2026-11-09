@@ -25,7 +25,9 @@ sequenceDiagram
     D-->>S: C1 exists
     deactivate D
     S->>S: borrowedAt = clock.nowUtc()
-    alt dueAt <= borrowedAt
+    alt dueAt == borrowedAt (приклад 1)
+        S-->>C: InvalidDueDate
+    else dueAt < borrowedAt (приклад 2)
         S-->>C: InvalidDueDate
     end
     deactivate S
