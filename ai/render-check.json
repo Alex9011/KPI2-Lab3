@@ -1,0 +1,58 @@
+[
+  {
+    "file": "S-01-first-loan.mmd",
+    "participants": 6,
+    "fragments": 1,
+    "returns": 12,
+    "canvas": "2045x1925"
+  },
+  {
+    "file": "S-02-repeat-loan.mmd",
+    "participants": 6,
+    "fragments": 2,
+    "returns": 13,
+    "canvas": "2045x2211"
+  },
+  {
+    "file": "S-03-already-loaned.mmd",
+    "participants": 6,
+    "fragments": 1,
+    "returns": 11,
+    "canvas": "2045x1782"
+  },
+  {
+    "file": "S-04-invalid-due-date.mmd",
+    "participants": 6,
+    "fragments": 1,
+    "returns": 7,
+    "canvas": "2045x1340"
+  },
+  {
+    "file": "S-05-member-missing.mmd",
+    "participants": 6,
+    "fragments": 1,
+    "returns": 5,
+    "canvas": "2045x1017"
+  },
+  {
+    "file": "S-06-copy-missing.mmd",
+    "participants": 6,
+    "fragments": 1,
+    "returns": 6,
+    "canvas": "2045x1147"
+  },
+  {
+    "file": "S-07-concurrent-requests.mmd",
+    "participants": 8,
+    "fragments": 3,
+    "returns": 18,
+    "canvas": "2735x3167"
+  },
+  {
+    "file": "S-08-unauthorized.mmd",
+    "participants": 6,
+    "fragments": 1,
+    "returns": 4,
+    "canvas": "2045x936"
+  }
+]

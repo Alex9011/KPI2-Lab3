@@ -1,0 +1,30 @@
+sequenceDiagram
+    %% title: S-05 — Читача не знайдено
+    actor B as Бібліотекар
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    B->>UI: Ввести M404, C1, dueAt
+    activate UI
+    UI->>C: submitLoan(M404, C1, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    A-->>C: allowed
+    deactivate A
+    C->>S: issueLoan(M404, C1, dueAt)
+    activate S
+    S->>D: findMember(M404)
+    activate D
+    D-->>S: null
+    deactivate D
+    opt Member не існує
+        S-->>C: MemberNotFound
+        C-->>UI: 404 Читача не знайдено
+    end
+    deactivate S
+    deactivate C
+    UI-->>B: Відмова — Loan не створено
+    deactivate UI

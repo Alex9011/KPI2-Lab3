@@ -1,0 +1,51 @@
+sequenceDiagram
+    %% title: S-02 — Повторна видача після повернення
+    actor B as Бібліотекар
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    B->>UI: Вказати M1, C1, dueAt
+    activate UI
+    UI->>C: submitLoan(M1, C1, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    A-->>C: allowed
+    deactivate A
+    C->>S: issueLoan(M1, C1, dueAt)
+    activate S
+    S->>D: findMember(M1), findCopy(C1)
+    activate D
+    D-->>S: Member M1, Copy C1
+    deactivate D
+    S->>S: validateDueDate(nowUtc, dueAt)
+    S->>D: beginTx() + lockCopy(C1)
+    activate D
+    D-->>S: locked
+    S->>D: findOpenLoan(C1)
+    D-->>S: none
+    S->>D: findHistoricalLoans(C1)
+    D-->>S: [L0, returnedAt set]
+    opt Попередня видача L0 завершена
+        S->>S: Зберегти L0 без змін
+    end
+    alt Немає відкритої Loan
+        S->>D: insertLoan(newId, M1, C1, dates, null)
+        D-->>S: Loan L1 — L1.id != L0.id
+        S->>D: commitTx()
+        D-->>S: committed
+        S-->>C: LoanCreated(L1)
+        C-->>UI: 201 + новий loanId + dueAt
+    else Відкрита Loan з'явилася
+        S->>D: rollbackTx()
+        D-->>S: rolled back
+        S-->>C: CopyAlreadyLoaned
+        C-->>UI: 409 Примірник уже видано
+    end
+    deactivate D
+    deactivate S
+    deactivate C
+    UI-->>B: Результат оформлення — L0 не змінено
+    deactivate UI

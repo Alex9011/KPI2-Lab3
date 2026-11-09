@@ -1,0 +1,37 @@
+sequenceDiagram
+    %% title: S-04 — Недопустимий строк (2 приклади)
+    actor B as Бібліотекар
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    B->>UI: Ввести M1, C1, dueAt
+    activate UI
+    UI->>C: submitLoan(M1, C1, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    A-->>C: allowed
+    deactivate A
+    C->>S: issueLoan(M1, C1, dueAt)
+    activate S
+    S->>D: findMember(M1)
+    activate D
+    D-->>S: M1 exists
+    deactivate D
+    S->>D: findCopy(C1)
+    activate D
+    D-->>S: C1 exists
+    deactivate D
+    S->>S: borrowedAt = clock.nowUtc()
+    alt dueAt == borrowedAt (приклад 1)
+        S-->>C: InvalidDueDate
+    else dueAt < borrowedAt (приклад 2)
+        S-->>C: InvalidDueDate
+    end
+    deactivate S
+    C-->>UI: 422 Строк має бути пізніше часу видачі
+    deactivate C
+    UI-->>B: Помилка — жодної Loan не створено
+    deactivate UI

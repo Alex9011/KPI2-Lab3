@@ -1,0 +1,77 @@
+sequenceDiagram
+    %% title: S-07 — Два одночасні запити на Copy C1
+    actor B1 as Бібліотекар B1
+    actor B2 as Бібліотекар B2
+    participant API1 as LoanController B1
+    participant API2 as LoanController B2
+    participant S1 as LoanService B1
+    participant S2 as LoanService B2
+    participant A as AccessGuard
+    participant DB as LibraryDB
+    Note over DB: Один Copy C1 — ексклюзивне блокування в одній транзакції
+    par Запит B1
+        B1->>API1: submitLoan(M1, C1, dueAt)
+        activate API1
+        API1->>A: authorize(sessionB1, librarian)
+        activate A
+        A-->>API1: allowed
+        deactivate A
+        API1->>S1: issueLoan(M1, C1, dueAt)
+        activate S1
+        S1->>DB: findMember(M1), findCopy(C1)
+        activate DB
+        DB-->>S1: both exist
+        deactivate DB
+        S1->>S1: validateDueDate(nowUtc, dueAt)
+        S1->>DB: beginTx() — lockCopy(C1)
+        activate DB
+        DB-->>S1: lock acquired after waiting
+        S1->>DB: findOpenLoan(C1)
+        DB-->>S1: none або Loan Lx
+        alt Відкрита Loan відсутня
+            S1->>DB: insertLoan(...) + commitTx()
+            DB-->>S1: created L1
+            S1-->>API1: LoanCreated(L1)
+        else Вже створено відкриту Loan
+            S1->>DB: rollbackTx()
+            DB-->>S1: no writes
+            S1-->>API1: CopyAlreadyLoaned
+        end
+        deactivate DB
+        deactivate S1
+        API1-->>B1: 201 або 409
+        deactivate API1
+    and Запит B2
+        B2->>API2: submitLoan(M2, C1, dueAt)
+        activate API2
+        API2->>A: authorize(sessionB2, librarian)
+        activate A
+        A-->>API2: allowed
+        deactivate A
+        API2->>S2: issueLoan(M2, C1, dueAt)
+        activate S2
+        S2->>DB: findMember(M2), findCopy(C1)
+        activate DB
+        DB-->>S2: both exist
+        deactivate DB
+        S2->>S2: validateDueDate(nowUtc, dueAt)
+        S2->>DB: beginTx() — lockCopy(C1)
+        activate DB
+        DB-->>S2: lock acquired after waiting
+        S2->>DB: findOpenLoan(C1)
+        DB-->>S2: none або Loan Ly
+        alt Відкрита Loan відсутня
+            S2->>DB: insertLoan(...) + commitTx()
+            DB-->>S2: created L2
+            S2-->>API2: LoanCreated(L2)
+        else Вже створено відкриту Loan
+            S2->>DB: rollbackTx()
+            DB-->>S2: no writes
+            S2-->>API2: CopyAlreadyLoaned
+        end
+        deactivate DB
+        deactivate S2
+        API2-->>B2: 201 або 409
+        deactivate API2
+    end
+    Note over DB: У фіналі рівно одна відкрита Loan — рівно один успіх

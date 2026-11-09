@@ -1,0 +1,34 @@
+sequenceDiagram
+    %% title: S-06 — Примірника не знайдено
+    actor B as Бібліотекар
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    B->>UI: Ввести M1, C404, dueAt
+    activate UI
+    UI->>C: submitLoan(M1, C404, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    A-->>C: allowed
+    deactivate A
+    C->>S: issueLoan(M1, C404, dueAt)
+    activate S
+    S->>D: findMember(M1)
+    activate D
+    D-->>S: M1 exists
+    deactivate D
+    S->>D: findCopy(C404)
+    activate D
+    D-->>S: null
+    deactivate D
+    opt Copy не існує
+        S-->>C: CopyNotFound
+        C-->>UI: 404 Примірник не знайдено
+    end
+    deactivate S
+    deactivate C
+    UI-->>B: Відмова — Loan не створено
+    deactivate UI

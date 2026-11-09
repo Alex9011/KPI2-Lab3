@@ -1,0 +1,25 @@
+sequenceDiagram
+    %% title: S-08 — Немає сесії або потрібної ролі
+    actor U as Користувач
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    U->>UI: Спробувати оформити видачу
+    activate UI
+    UI->>C: submitLoan(M1, C1, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    alt Сесія відсутня
+        A-->>C: denied (no session)
+    else Сесія без ролі бібліотекаря
+        A-->>C: denied (wrong role)
+    end
+    deactivate A
+    C-->>UI: 403 Недостатньо прав
+    deactivate C
+    UI-->>U: Показати відмову
+    deactivate UI
+    Note over S,D: Запити до LoanService та БД не виконуються

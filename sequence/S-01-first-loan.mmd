@@ -1,0 +1,48 @@
+sequenceDiagram
+    %% title: S-01 — Перша успішна видача
+    actor B as Бібліотекар
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    B->>UI: Ввести M1, C1, dueAt
+    activate UI
+    UI->>C: submitLoan(M1, C1, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    A-->>C: allowed
+    deactivate A
+    C->>S: issueLoan(M1, C1, dueAt)
+    activate S
+    S->>D: findMember(M1)
+    activate D
+    D-->>S: Member M1
+    deactivate D
+    S->>D: findCopy(C1)
+    activate D
+    D-->>S: Copy C1
+    deactivate D
+    S->>S: borrowedAt = clock.nowUtc()
+    alt dueAt > borrowedAt
+        S->>D: beginTx() + lockCopy(C1)
+        activate D
+        D-->>S: exclusive lock acquired
+        S->>D: findOpenLoan(C1)
+        D-->>S: none
+        S->>D: insertLoan(newId, M1, C1, dates, null)
+        D-->>S: Loan L1 saved
+        S->>D: commitTx()
+        D-->>S: committed
+        deactivate D
+        S-->>C: LoanCreated(L1, dueAt)
+        C-->>UI: 201 + loanId + dueAt
+    else dueAt <= borrowedAt
+        S-->>C: InvalidDueDate
+        C-->>UI: 422 InvalidDueDate
+    end
+    deactivate S
+    deactivate C
+    UI-->>B: Показати результат оформлення
+    deactivate UI

@@ -1,0 +1,44 @@
+sequenceDiagram
+    %% title: S-03 — Відмова для вже виданого примірника
+    actor B as Бібліотекар
+    participant UI as Форма видачі
+    participant C as LoanController
+    participant A as AccessGuard
+    participant S as LoanService
+    participant D as LibraryDB
+    B->>UI: Вказати M1, C1, dueAt
+    activate UI
+    UI->>C: submitLoan(M1, C1, dueAt)
+    activate C
+    C->>A: authorize(session, librarian)
+    activate A
+    A-->>C: allowed
+    deactivate A
+    C->>S: issueLoan(M1, C1, dueAt)
+    activate S
+    S->>D: findMember(M1), findCopy(C1)
+    activate D
+    D-->>S: Member і Copy існують
+    deactivate D
+    S->>S: validateDueDate(nowUtc, dueAt)
+    S->>D: beginTx() + lockCopy(C1)
+    activate D
+    D-->>S: locked
+    S->>D: findOpenLoan(C1)
+    D-->>S: L0(returnedAt = null)
+    alt Існує відкрита Loan L0
+        S->>D: rollbackTx()
+        D-->>S: no writes
+        S-->>C: CopyAlreadyLoaned
+        C-->>UI: 409 Примірник уже видано
+    else Відкритої Loan немає
+        S->>D: insertLoan(...) + commitTx()
+        D-->>S: created
+        S-->>C: LoanCreated
+        C-->>UI: 201 Видачу оформлено
+    end
+    deactivate D
+    deactivate S
+    deactivate C
+    UI-->>B: Показати результат операції
+    deactivate UI
