@@ -5,7 +5,6 @@ import re
 from xml.etree import ElementTree as ET
 ROOT=Path(__file__).resolve().parents[1]
 spec=(ROOT/'spec.md').read_text(encoding='utf8')
-old=(ROOT/'ai/lab2-reference-spec.md').read_text(encoding='utf8')
 files=sorted((ROOT/'sequence').glob('S-*.mmd'))
 assert len(files)==8,f'Expected 8 diagrams, got {len(files)}'
 errors=[]
@@ -14,7 +13,7 @@ for i,f in enumerate(files,1):
     if not f.name.startswith(id+'-'):errors.append(f'wrong order {f}')
     src=f.read_text(encoding='utf8')
     if not src.strip().startswith('sequenceDiagram'):errors.append(f'no sequenceDiagram: {f.name}')
-    if not any(f'**{id}.' in t for t in (spec,old)): errors.append(f'missing {id} in spec/Lab2')
+    if f'**{id}.' not in spec: errors.append(f'missing {id} in spec')
     if not re.search(r'(?m)^\s*(alt|opt|loop|par)\s+\S',src): errors.append(f'no combined fragment {f.name}')
     if '-->>' not in src:errors.append(f'no return {f.name}')
     if len(re.findall(r'(?m)^\s*activate\s+',src))!=len(re.findall(r'(?m)^\s*deactivate\s+',src)): errors.append(f'activation imbalance {f.name}')
