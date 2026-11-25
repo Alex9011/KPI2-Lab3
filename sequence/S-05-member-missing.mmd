@@ -20,7 +20,7 @@ sequenceDiagram
     activate D
     D-->>S: null
     deactivate D
-    opt Member не існує
+    break Member не знайдено — завершити UC-05
         S-->>C: MemberNotFound
         C-->>UI: 404 Читача не знайдено
     end

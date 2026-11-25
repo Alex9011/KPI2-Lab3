@@ -24,7 +24,7 @@ sequenceDiagram
     activate D
     D-->>S: null
     deactivate D
-    opt Copy не існує
+    break Copy не знайдено — завершити UC-05
         S-->>C: CopyNotFound
         C-->>UI: 404 Примірник не знайдено
     end
