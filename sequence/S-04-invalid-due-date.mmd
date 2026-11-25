@@ -25,13 +25,11 @@ sequenceDiagram
     D-->>S: C1 exists
     deactivate D
     S->>S: borrowedAt = clock.nowUtc()
-    alt dueAt == borrowedAt (приклад 1)
+    break dueAt <= borrowedAt (обидва приклади Gherkin)
         S-->>C: InvalidDueDate
-    else dueAt < borrowedAt (приклад 2)
-        S-->>C: InvalidDueDate
+        C-->>UI: 422 Строк має бути пізніше часу видачі
     end
     deactivate S
-    C-->>UI: 422 Строк має бути пізніше часу видачі
     deactivate C
     UI-->>B: Помилка — жодної Loan не створено
     deactivate UI
