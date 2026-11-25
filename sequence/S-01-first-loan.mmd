@@ -24,7 +24,7 @@ sequenceDiagram
     activate D
     D-->>S: Copy C1
     deactivate D
-    S->>S: borrowedAt = clock.nowUtc(); validateDueDate(dueAt)
+    S->>S: borrowedAt = clock.nowUtc(), validateDueDate(dueAt)
     critical Atomic issue transaction for C1
         option C1 is locked and has no open Loan
             S->>D: beginTx() + lockCopy(C1)
