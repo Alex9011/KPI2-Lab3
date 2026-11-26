@@ -26,19 +26,14 @@ sequenceDiagram
     D-->>S: locked
     S->>D: findOpenLoan(C1)
     D-->>S: L0(returnedAt = null)
-    alt Існує відкрита Loan L0
+    break Якщо для Copy C1 є відкрита Loan
         S->>D: rollbackTx()
-        D-->>S: no writes
+        D-->>S: rolled back — no writes
+        deactivate D
         S-->>C: CopyAlreadyLoaned
         C-->>UI: 409 Примірник уже видано
-    else Відкритої Loan немає
-        S->>D: insertLoan(...) + commitTx()
-        D-->>S: created
-        S-->>C: LoanCreated
-        C-->>UI: 201 Видачу оформлено
     end
-    deactivate D
     deactivate S
     deactivate C
-    UI-->>B: Показати результат операції
+    UI-->>B: Відмова — відкриту Loan не змінено
     deactivate UI

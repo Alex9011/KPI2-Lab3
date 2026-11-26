@@ -28,9 +28,7 @@ sequenceDiagram
     D-->>S: none
     S->>D: findHistoricalLoans(C1)
     D-->>S: [L0, returnedAt set]
-    opt Попередня видача L0 завершена
-        S->>S: Зберегти L0 без змін
-    end
+    Note over S,D: Історична Loan L0 залишається незмінною
     alt Немає відкритої Loan
         S->>D: insertLoan(newId, M1, C1, dates, null)
         D-->>S: Loan L1 — L1.id != L0.id
